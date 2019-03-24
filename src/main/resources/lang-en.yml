@@ -1,0 +1,14 @@
+command-no-permission: "&4You do not have permission for this command!"
+player-command: "&4Player only command!"
+player-not-found: "&4That player is not online!"
+
+give-trident: "&bGiving a Dolphin Summoning Trident to &1{player}"
+received-trident: "&bYou received a Dolphin Summoning Trident!"
+
+trident-on-cooldown: "&1Cannot summon another trident for &c{cooldown}"
+
+dolphin-summoned: "&bA Dolphin has come to help you!"
+dolphin-expired: "&bYour dolphin has expired ..."
+
+version: "&d{plugin} v{version}"
+reload: "&d{plugin} v{version} reloaded."

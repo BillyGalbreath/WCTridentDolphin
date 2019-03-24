@@ -3,7 +3,6 @@ package me.mart.wctridentdolphin.listener;
 import me.mart.wctridentdolphin.WCTridentDolphin;
 import me.mart.wctridentdolphin.configuration.Config;
 import me.mart.wctridentdolphin.configuration.Lang;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Dolphin;
@@ -92,7 +91,7 @@ public class TridentListener implements Listener {
             setCooldown(player);
         }
 
-        player.sendMessage(ChatColor.BLUE + "A Dolphin has come to help you!");
+        Lang.send(player, Lang.DOLPHIN_SUMMONED);
 
         if (Config.SPAWN_FLYING_TRIDENT) {
             Trident trident = player.getWorld().spawn(player.getLocation(), Trident.class);

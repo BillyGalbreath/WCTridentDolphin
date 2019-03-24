@@ -19,6 +19,7 @@ public class Lang {
 
     public static String TRIDENT_ON_COOLDOWN;
 
+    public static String DOLPHIN_SUMMONED;
     public static String DOLPHIN_EXPIRED;
 
     public static String VERSION;
@@ -41,8 +42,9 @@ public class Lang {
         GIVE_TRIDENT = config.getString("give-trident", "&bGiving a Dolphin Summoning Trident to &1{player}");
         RECEIVED_TRIDENT = config.getString("received-trident", "&bYou received a Dolphin Summoning Trident!");
 
-        TRIDENT_ON_COOLDOWN = config.getString("trident-on-cooldown", "&1Cannot summon another trident for &c{cooldown} &1s");
+        TRIDENT_ON_COOLDOWN = config.getString("trident-on-cooldown", "&1Cannot summon another trident for &c{cooldown}");
 
+        DOLPHIN_SUMMONED = config.getString("dolphin-summoned", "&bA Dolphin has come to help you!");
         DOLPHIN_EXPIRED = config.getString("dolphin-expired", "&bYour dolphin has expired ...");
 
         VERSION = config.getString("version", "&d{plugin} v{version}");

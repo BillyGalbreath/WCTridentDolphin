@@ -1,3 +1,7 @@
+color-logs: true
+debug-mode: false
+language-file: "lang-en.yml"
+
 dolphin-live-time: 60
 dolphin-spawn-cooldown: 120
 dolphin-spawn-on-sneak-only: true
