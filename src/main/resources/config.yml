@@ -7,7 +7,7 @@ dolphin-spawn-cooldown: 120
 dolphin-spawn-on-sneak-only: true
 dolphin-invulnerable: false
 trident-get-cooldown: 120
-trident-lore: Cool Name for Trident
+trident-lore: "&7&oSummon's a dolphin\n&7&oto help you"
 spawn-flying-trident: true
 flying-trident-speed: 2
 destroy-trident-after-use: false

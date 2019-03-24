@@ -17,6 +17,7 @@ public class Lang {
     public static String GIVE_TRIDENT;
     public static String RECEIVED_TRIDENT;
 
+    public static String DOLPHIN_ON_COOLDOWN;
     public static String TRIDENT_ON_COOLDOWN;
 
     public static String DOLPHIN_SUMMONED;
@@ -32,7 +33,9 @@ public class Lang {
         String langFile = Config.LANGUAGE_FILE;
         JavaPlugin plugin = WCTridentDolphin.getInstance();
         File configFile = new File(plugin.getDataFolder(), langFile);
-        plugin.saveResource(Config.LANGUAGE_FILE, false);
+        if (!configFile.exists()) {
+            plugin.saveResource(Config.LANGUAGE_FILE, false);
+        }
         FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
 
         COMMAND_NO_PERMISSION = config.getString("command-no-permission", "&4You do not have permission for this command!");
@@ -42,6 +45,7 @@ public class Lang {
         GIVE_TRIDENT = config.getString("give-trident", "&bGiving a Dolphin Summoning Trident to &1{player}");
         RECEIVED_TRIDENT = config.getString("received-trident", "&bYou received a Dolphin Summoning Trident!");
 
+        DOLPHIN_ON_COOLDOWN = config.getString("dolphin-on-cooldown", "&1Cannot summon another dolphin for &c{cooldown}");
         TRIDENT_ON_COOLDOWN = config.getString("trident-on-cooldown", "&1Cannot summon another trident for &c{cooldown}");
 
         DOLPHIN_SUMMONED = config.getString("dolphin-summoned", "&bA Dolphin has come to help you!");

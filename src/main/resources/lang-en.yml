@@ -5,6 +5,7 @@ player-not-found: "&4That player is not online!"
 give-trident: "&bGiving a Dolphin Summoning Trident to &1{player}"
 received-trident: "&bYou received a Dolphin Summoning Trident!"
 
+dolphin-on-cooldown: "&1Cannot summon another dolphin for &c{cooldown}"
 trident-on-cooldown: "&1Cannot summon another trident for &c{cooldown}"
 
 dolphin-summoned: "&bA Dolphin has come to help you!"

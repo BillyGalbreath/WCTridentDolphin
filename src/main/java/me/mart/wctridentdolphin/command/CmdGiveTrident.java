@@ -1,5 +1,6 @@
 package me.mart.wctridentdolphin.command;
 
+import me.mart.wctridentdolphin.Cooldown;
 import me.mart.wctridentdolphin.WCTridentDolphin;
 import me.mart.wctridentdolphin.configuration.Config;
 import me.mart.wctridentdolphin.configuration.Lang;
@@ -7,20 +8,17 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.time.Duration;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 public class CmdGiveTrident implements TabExecutor {
     private final WCTridentDolphin plugin;
 
-    private final HashMap<UUID, Long> cooldowns = new HashMap<>();
+    private Cooldown cooldowns = new Cooldown(Cooldown.Type.TRIDENT);
 
     public CmdGiveTrident(WCTridentDolphin plugin) {
         this.plugin = plugin;
@@ -47,7 +45,9 @@ public class CmdGiveTrident implements TabExecutor {
 
             // give trident to self
             target = (Player) sender;
-            giveTrident(target, true);
+            if (giveTrident(target, true)) {
+                return true;
+            }
         } else {
             if (!sender.hasPermission("wctd.command.givetrident.others")) {
                 Lang.send(sender, Lang.COMMAND_NO_PERMISSION);
@@ -61,7 +61,9 @@ public class CmdGiveTrident implements TabExecutor {
             }
 
             // give trident to target
-            giveTrident(target, target == sender);
+            if (giveTrident(target, target == sender)) {
+                return true;
+            }
 
             // notify sender
             Lang.send(sender, Lang.GIVE_TRIDENT
@@ -73,18 +75,18 @@ public class CmdGiveTrident implements TabExecutor {
         return true;
     }
 
-    private void giveTrident(Player player, boolean checkCooldown) {
+    private boolean giveTrident(Player player, boolean checkCooldown) {
         boolean noCooldownPerm = !player.hasPermission("wctd.command.givetrident.nocooldown");
-        if (checkCooldown && isOnCooldown(player, noCooldownPerm)) {
+        if (checkCooldown && cooldowns.contains(player, noCooldownPerm)) {
             Lang.send(player, Lang.TRIDENT_ON_COOLDOWN
-                    .replace("{cooldown}", getRemaining(player)));
-            return;
+                    .replace("{cooldown}", cooldowns.remaining(player)));
+            return true; // short circuit command early
         }
 
         ItemStack trident = new ItemStack(Material.TRIDENT);
         ItemMeta meta = trident.getItemMeta();
         //noinspection ConstantConditions (meta is impossible to be null. thanks, md_5)
-        meta.setLore(Collections.singletonList(Config.TRIDENT_LORE));
+        meta.setLore(Config.TRIDENT_LORE);
         Config.TRIDENT_ENCHANTS.forEach((enchantment, level) -> {
             if (level > 0) {
                 meta.addEnchant(enchantment, level, true);
@@ -92,35 +94,16 @@ public class CmdGiveTrident implements TabExecutor {
         });
         trident.setItemMeta(meta);
 
-        player.getInventory().addItem(trident);
+        if (!player.getInventory().addItem(trident).isEmpty()) {
+            // could not fit in inventory, drop on ground
+            Item item = player.getWorld().dropItem(player.getLocation(), trident);
+            item.setOwner(player.getUniqueId());
+            item.setPickupDelay(0);
+        }
 
         if (checkCooldown && noCooldownPerm) {
-            setCooldown(player);
+            cooldowns.start(player);
         }
-    }
-
-    private boolean isOnCooldown(Player player, boolean noCooldownPerm) {
-        Long remaining = cooldowns.get(player.getUniqueId());
-        if (remaining == null) {
-            return false;
-        }
-        if (remaining <= 0) {
-            cooldowns.remove(player.getUniqueId());
-        }
-        return remaining > 0 && noCooldownPerm;
-    }
-
-    private void setCooldown(Player player) {
-        cooldowns.put(player.getUniqueId(), System.currentTimeMillis() / 1000L + Config.TRIDENT_GET_COOLDOWN);
-    }
-
-    private String getRemaining(Player player) {
-        long seconds = cooldowns.get(player.getUniqueId()) - System.currentTimeMillis() / 1000L;
-        // https://stackoverflow.com/a/40487511/3530727
-        return Duration.ofSeconds(seconds)
-                .toString()
-                .substring(2)
-                .replaceAll("(\\d[HMS])(?!$)", "$1 ")
-                .toLowerCase();
+        return false; // do not short circuit command
     }
 }

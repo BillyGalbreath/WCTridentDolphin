@@ -7,7 +7,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Config {
@@ -22,7 +24,7 @@ public class Config {
     public static boolean DOLPHIN_HAS_AI;
 
     public static int TRIDENT_GET_COOLDOWN;
-    public static String TRIDENT_LORE;
+    public static List<String> TRIDENT_LORE = new ArrayList<>();
 
     public static boolean SPAWN_FLYING_TRIDENT;
     public static int FLYING_TRIDENT_SPEED;
@@ -53,8 +55,13 @@ public class Config {
         DOLPHIN_HAS_AI = config.getBoolean("dolphin-has-ai", true);
 
         TRIDENT_GET_COOLDOWN = config.getInt("trident-get-cooldown", 120);
-        //noinspection ConstantConditions (getString() with a default cannot be null. thanks, md_5)
-        TRIDENT_LORE = ChatColor.translateAlternateColorCodes('&', config.getString("trident-lore", "Summon Dolphin"));
+        TRIDENT_LORE.clear();
+        String lore = config.getString("trident-lore", "&7&oSummon's a dolphin\n&7&oto help you");
+        if (lore != null && !lore.isEmpty()) {
+            for (String line : lore.split("\n")) {
+                TRIDENT_LORE.add(ChatColor.translateAlternateColorCodes('&', line));
+            }
+        }
 
         SPAWN_FLYING_TRIDENT = config.getBoolean("spawn-flying-trident", true);
         FLYING_TRIDENT_SPEED = config.getInt("flying-trident-speed", 2);

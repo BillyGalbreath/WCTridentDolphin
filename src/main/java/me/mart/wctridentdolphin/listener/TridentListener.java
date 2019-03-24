@@ -1,8 +1,11 @@
 package me.mart.wctridentdolphin.listener;
 
+import me.mart.wctridentdolphin.Cooldown;
 import me.mart.wctridentdolphin.WCTridentDolphin;
 import me.mart.wctridentdolphin.configuration.Config;
 import me.mart.wctridentdolphin.configuration.Lang;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Dolphin;
@@ -18,15 +21,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.LazyMetadataValue;
+import org.bukkit.util.Vector;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
 public class TridentListener implements Listener {
     private final WCTridentDolphin plugin;
 
-    private final HashMap<UUID, Long> cooldowns = new HashMap<>();
+    private Cooldown cooldowns = new Cooldown(Cooldown.Type.DOLPHIN);
 
     public TridentListener(WCTridentDolphin plugin) {
         this.plugin = plugin;
@@ -61,26 +64,35 @@ public class TridentListener implements Listener {
         }
 
         boolean noCooldownPerm = !player.hasPermission("wctd.summon.dolphin.nocooldown");
-        if (isOnCooldown(player, noCooldownPerm)) {
+        if (cooldowns.contains(player, noCooldownPerm)) {
+            Lang.send(player, Lang.DOLPHIN_ON_COOLDOWN
+                    .replace("{cooldown}", cooldowns.remaining(player)));
             return; // on cooldown
         }
 
         if (Config.DESTROY_TRIDENT_AFTER_USE && !player.hasPermission("wctd.trident.keep")) {
             player.getInventory().remove(handItem);
-        } else {
+        } else if (player.getGameMode() != GameMode.CREATIVE) {
             Damageable meta = (Damageable) handItem.getItemMeta();
             //noinspection ConstantConditions (meta is impossible to be null. thanks, md_5)
             meta.setDamage(meta.getDamage() + Config.TRIDENT_DAMAGE_ON_USE);
             handItem.setItemMeta((ItemMeta) meta);
         }
 
-        Dolphin dolphin = player.getWorld().spawn(player.getLocation(), Dolphin.class);
+        Location eye = player.getEyeLocation();
+        Vector eyeDir = eye.getDirection();
+        Dolphin dolphin = player.getWorld().spawn(eye.add(eyeDir.multiply(2)), Dolphin.class);
         dolphin.setRemainingAir(dolphin.getMaximumAir());
         dolphin.setRemoveWhenFarAway(true);
-        dolphin.setInvulnerable(Config.DOLPHIN_INVULNERABLE);
+        dolphin.setInvulnerable(true); // make dolphin invincible for 20 ticks
+        if (!Config.DOLPHIN_INVULNERABLE) {
+            plugin.getServer().getScheduler().runTaskLater(plugin,
+                    () -> dolphin.setInvulnerable(false), 20);
+        }
         dolphin.setAI(Config.DOLPHIN_HAS_AI);
         dolphin.setCustomName(player.getName() + "'s Dolphin");
         dolphin.setCustomNameVisible(true);
+        dolphin.setVelocity(eyeDir.multiply(0.5D));
         if (!dolphin.hasMetadata("MarkedDolphin")) {
             dolphin.setMetadata("MarkedDolphin", new LazyMetadataValue(plugin, Object::new));
         }
@@ -88,34 +100,17 @@ public class TridentListener implements Listener {
         scheduleDeath(dolphin.getUniqueId(), player.getUniqueId());
 
         if (noCooldownPerm) {
-            setCooldown(player);
+            cooldowns.start(player);
         }
 
         Lang.send(player, Lang.DOLPHIN_SUMMONED);
 
         if (Config.SPAWN_FLYING_TRIDENT) {
             Trident trident = player.getWorld().spawn(player.getLocation(), Trident.class);
-            trident.setVelocity(trident.getVelocity().add(player.getEyeLocation().getDirection().multiply(Config.FLYING_TRIDENT_SPEED)));
-            if (Config.TRIDENT_CAN_BE_PICKED_UP) {
-                trident.setPickupStatus(Arrow.PickupStatus.ALLOWED);
-            }
+            trident.setVelocity(eyeDir.multiply(Config.FLYING_TRIDENT_SPEED));
+            trident.setPickupStatus(Config.TRIDENT_CAN_BE_PICKED_UP ? Arrow.PickupStatus.ALLOWED : Arrow.PickupStatus.CREATIVE_ONLY);
             trident.setShooter(player);
         }
-    }
-
-    private boolean isOnCooldown(Player player, boolean noCooldownPerm) {
-        Long remaining = cooldowns.get(player.getUniqueId());
-        if (remaining == null) {
-            return false;
-        }
-        if (remaining <= 0) {
-            cooldowns.remove(player.getUniqueId());
-        }
-        return remaining > 0 && noCooldownPerm;
-    }
-
-    private void setCooldown(Player player) {
-        cooldowns.put(player.getUniqueId(), System.currentTimeMillis() / 1000L + Config.DOLPHIN_SPAWN_COOLDOWN);
     }
 
     private void scheduleDeath(UUID dolphin, UUID owner) {
@@ -147,9 +142,6 @@ public class TridentListener implements Listener {
             return false;
         }
         List<String> lore = meta.getLore();
-        if (lore == null || lore.size() == 0) {
-            return false;
-        }
-        return lore.get(0).equals(Config.TRIDENT_LORE);
+        return lore != null && lore.equals(Config.TRIDENT_LORE);
     }
 }
