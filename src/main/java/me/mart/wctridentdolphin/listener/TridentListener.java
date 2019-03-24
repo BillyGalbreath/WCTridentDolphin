@@ -126,7 +126,7 @@ public class TridentListener implements Listener {
             }
             Player player = plugin.getServer().getPlayer(owner);
             if (player != null && player.isOnline()) {
-                player.sendMessage(Lang.DOLPHIN_EXPIRED);
+                Lang.send(player, Lang.DOLPHIN_EXPIRED);
             }
         }, 20 * Config.DOLPHIN_LIVE_TIME);
     }
