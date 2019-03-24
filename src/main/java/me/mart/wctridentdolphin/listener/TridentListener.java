@@ -104,7 +104,10 @@ public class TridentListener implements Listener {
     }
 
     private boolean isOnCooldown(Player player, boolean noCooldownPerm) {
-        long remaining = cooldowns.get(player.getUniqueId());
+        Long remaining = cooldowns.get(player.getUniqueId());
+        if (remaining == null) {
+            return false;
+        }
         if (remaining <= 0) {
             cooldowns.remove(player.getUniqueId());
         }
