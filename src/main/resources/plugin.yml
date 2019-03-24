@@ -1,0 +1,55 @@
+name: "${project.artifactId}"
+main: "${project.groupId}.${project.artifactId}"
+version: "${project.version}"
+prefix: "TriDolph"
+author: "Ford"
+api-version: 1.13
+softdepend: [Ridables]
+
+commands:
+  wctd:
+    description: Reload the config
+    usage: /<command> (reload)
+    aliases:
+      - wctridentdolphin
+      - tridentdolphin
+  givetrident:
+    description: Give a trident to a player
+    usage: /<command> (player)
+    aliases:
+      - gettrident
+
+permissions:
+  wtcd.command.*:
+    description: Gives permission to use all commands
+    default: op
+    children:
+      - wctd.command.admin
+      - wctd.command.givetrident
+      - wctd.command.givetrident.others
+
+  wctd.command.admin:
+    description: Reload the config
+    default: op
+  wctd.command.givetrident:
+    description: Allow giving trident to self
+    default: op
+  wctd.command.givetrident.nocooldown:
+    description: Allow bypassing cooldown for giving trident to self
+    default: false
+  wctd.command.givetrident.others:
+    description: Allow giving trident to other players
+    default: op
+    children:
+      - wctd.command.givetrident
+
+  wctd.summon.dolphin:
+    description: Allow summoning of a Dolphin with a Trident
+    default: true
+  wctd.summon.dolphin.nocooldown:
+    description: Bypass Dolphin summoning cooldown
+    default: false
+
+  wctd.trident.keep:
+    description: Keep trident regardless of config
+    default: false
